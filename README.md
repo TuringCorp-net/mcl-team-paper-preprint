@@ -1,4 +1,4 @@
-# MCL-Team: Validating the Meta-Coordination Layer via Minimal Multi-Model Collaboration on Public Benchmarks
+# MCL-Team: Minimal Multi-Model Collaboration Surpasses Single Models on LiveBench and IFEval
 
 **Preprint**. Companion to the MCL conceptual framework preprint.  
 This paper provides the first public benchmark validation of the MCL Team algorithm.
