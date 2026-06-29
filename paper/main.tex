@@ -174,57 +174,24 @@ LiveBench \cite{White2024LiveBench} is designed to resist contamination through 
 
 \subsection{3 Method}\label{method}
 
-\subsubsection{3.1 Design Principles}\label{design-principles}
+MCL-Team is an engineering instantiation of the Meta-Coordination Layer framework \cite{Zhang2025MCL}. It coordinates multiple heterogeneous language models through MCL mechanisms---including parallel generation with peer review, cross-optimization, and coordinated fusion---to produce a single consolidated output. The algorithm is provided as an OpenAI-compatible API endpoint (\texttt{/v1/chat/completions}); proprietary prompts, model routing configurations, and internal coordination parameters are not disclosed.
 
-The Team algorithm is designed to be minimal---the foundational instantiation of the MCL cooperative cross-discussion family. Three principles:
-
-\begin{enumerate}
-\tightlist
-\item \textbf{Model heterogeneity}: Models with different pretraining distributions and architectures produce genuinely diverse responses to the same prompt.
-\item \textbf{Structured cross-reference}: When each model sees the others' first-pass outputs, it can identify and correct its own blind spots in a second pass.
-\item \textbf{Independent fusion}: A dedicated summarizer, distinct from the solver models, produces the final consolidated output.
-\end{enumerate}
-
-\subsubsection{3.2 Pipeline}\label{pipeline}
-
-The algorithm operates in three coordinated phases (Figure~\ref{fig1:team-pipeline}):
-
-\begin{enumerate}
-\tightlist
-\item \textbf{Preparation}: Input sanitization and language detection.
-\item \textbf{Generation with cross-optimization}: Heterogeneous models independently generate initial responses. When multiple rounds are configured, models receive access to peer outputs and produce revised responses that may adopt, refine, or rebut other approaches.
-\item \textbf{Fusion}: A dedicated model, distinct from the generation models, synthesizes the final output from all generated responses.
-\end{enumerate}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\linewidth]{F1.png}
-    \caption{MCL-Team Pipeline: Preprocessing $\rightarrow$ Parallel Generation (1--2 rounds) $\rightarrow$ Fusion}
-    \label{fig1:team-pipeline}
-\end{figure}
-
-\subsubsection{3.3 Quality-Cost Tiers}\label{tiers}
-
-Three tiers offer explicit quality-cost trade-offs (Table~\ref{tab:tiers}). Junior and Senior share the same resource allocation, differing only in coordination depth. This provides an ablation: any performance difference between Junior and Senior is attributable to the coordination mechanism. Principal applies greater resource allocation.
+MCL-Team is offered at three quality-cost operating points (Table~\ref{tab:tiers}). Internal configuration details---including the specific coordination mechanisms, model selection, and parameter differences between tiers---are proprietary. The Junior $\rightarrow$ Senior comparison serves as an ablation: identical resource allocation, differing only in coordination depth. Any performance difference between the two is attributable to the coordination mechanism, independent of resource scaling.
 
 \begin{table}[H]
 \centering
-\caption{MCL-Team tiers.}
+\caption{MCL-Team operating points.}
 \label{tab:tiers}
-\begin{tabular}{@{}lcc@{}}
+\begin{tabular}{@{}lcl@{}}
 \toprule
-\textbf{Tier} & \textbf{Model Class} & \textbf{Rounds} \\
+\textbf{Tier} & \textbf{Configuration} & \textbf{Coordination} \\
 \midrule
-Junior  & Standard & 1 \\
-Senior  & Standard & 2 \\
-Principal & Pro & 2 \\
+Junior  & Baseline & Standard \\
+Senior  & Baseline & Enhanced \\
+Principal & Expanded & Enhanced \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\subsubsection{3.4 Implementation}\label{implementation}
-
-MCL-Team is deployed as a Cloudflare Worker behind an OpenAI-compatible API endpoint (\texttt{/v1/chat/completions}). Requests are routed through an AI Gateway to third-party model providers. Proprietary prompts, model routing configurations, and implementation-level workflow controls are not disclosed. The high-level algorithmic description in this section provides sufficient detail for independent researchers to understand the approach and construct their own implementations.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -277,7 +244,7 @@ Principal & \textbf{85.9} & 94.0 & 86.9 & \textbf{97.0} & 85.0 & 66.5 \\
 \end{tabular}
 \end{table}
 
-Language and IF are already near-ceiling at Junior (93.5, 87.4) and improve marginally with additional rounds. Reasoning, Math, and Data Analysis scale more substantially with tier. Principal achieves the highest Overall (85.9) and Reasoning (97.0) scores.
+Language and IF are already near-ceiling at Junior (93.5, 87.4) and improve marginally at higher tiers. Reasoning, Math, and Data Analysis scale more substantially. Principal achieves the highest Overall (85.9) and Reasoning (97.0) scores.
 
 \subsubsection{5.2 Comparison with Leading Single Models}\label{comparison}
 
@@ -341,7 +308,7 @@ Llama-3.1 405B     & 85.6\% & --- \\
 
 MCL-Team Senior achieves 92.6\% prompt-strict accuracy, 5.3 points above Claude Opus 4 (87.3\%), and 8.9 points above GPT-4o (83.7\%). Principal reaches 95.0\% instruction-strict accuracy, meaning 95\% of individual instructions are followed correctly across all 541 prompts. All scores are fully reproducible; no LLM judge is involved.
 
-\subsubsection{5.4 Ablation: The Cross-Reference Round}\label{ablation}
+\subsubsection{5.4 Ablation: Coordination Depth}\label{ablation}
 
 Junior and Senior share the same resource allocation; Senior applies additional coordination depth. This isolates the mechanism:
 
@@ -357,7 +324,7 @@ The pattern---substantial gains in reasoning-intensive dimensions, modest gains 
 
 \subsubsection{5.5 Cost Structure}\label{cost-analysis}
 
-Multi-model collaboration increases token consumption by 5--10$\times$ and latency by 2--10$\times$ relative to a single model call. The cost is transparent: \(N\) parallel calls in Round~1, another \(N\) in Round~2, plus one summary call. Principal, with Pro models and two rounds, occupies the upper end of both ranges. Figure~\ref{fig2:quality-cost} maps the quality-cost frontier across tiers.
+Multi-model collaboration increases token consumption by 5--10$\times$ and latency by 2--10$\times$ relative to a single model call. The cost structure is transparent: each operating point involves a fixed number of internal model calls determined by the tier configuration. The Principal tier occupies the upper end of both cost ranges. Figure~\ref{fig2:quality-cost} maps the quality-cost frontier across tiers.
 
 \begin{figure}[H]
     \centering
@@ -382,7 +349,7 @@ The Junior $\rightarrow$ Senior ablation (+6.3 Reasoning) isolates the cross-ref
 \tightlist
 \item \textbf{Knowledge complementarity}: Different pretraining distributions cover different factual and reasoning domains. Cross-reference surfaces knowledge available to one model but not the other.
 \item \textbf{Path diversity}: Different model architectures and training objectives produce different reasoning chains. Exposure to alternatives enables correction of locally plausible but globally incorrect chains.
-\item \textbf{Consensus calibration}: Agreement between models provides a high-confidence signal for the summarizer. Disagreement in Round~1 triggers explicit reconciliation in Round~2.
+\item \textbf{Consensus calibration}: Agreement between models provides a high-confidence signal for the fusion step. Disagreement triggers deeper reconciliation through the coordination mechanism.
 \end{enumerate}
 
 \subsubsection{6.2 Scope and Limitations}\label{limitations}
