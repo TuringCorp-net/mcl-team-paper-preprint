@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite the preprint."
+title: "MCL-Team: Validating the Meta-Coordination Layer via Minimal Multi-Model Collaboration on Public Benchmarks"
+authors:
+  - family-names: Zhang
+    given-names: Li
+year: 2026
+preferred-citation:
+  type: article
+  title: "MCL-Team: Validating the Meta-Coordination Layer via Minimal Multi-Model Collaboration on Public Benchmarks"
+  authors:
+    - family-names: Zhang
+      given-names: Li
+  year: 2026
