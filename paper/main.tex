@@ -160,7 +160,7 @@ Our contributions are:
 
 \subsubsection{2.1 Multi-Agent Frameworks}\label{multi-agent-frameworks}
 
-MetaGPT \cite{Hong2023MetaGPT} encodes software engineering workflows as standardized operating procedures for role-playing agents. CAMEL \cite{Li2023CAMEL} studies communicative agent behavior through role assignment in simulated societies. AutoGen \cite{Wu2023AutoGen} provides infrastructure for multi-agent conversations. Generative Agents \cite{Park2023GenerativeAgents} simulate human-like behaviors in interactive sandboxes. These works demonstrate architectural promise but do not report standardized benchmark scores against leading single models; their evaluations emphasize case studies, qualitative analyses, or custom metrics that do not support direct comparison.
+MetaGPT \cite{Hong2023MetaGPT} encodes software engineering workflows as standardized operating procedures for role-playing agents. CAMEL \cite{Li2023CAMEL} studies communicative agent behavior through role assignment in simulated societies. AutoGen \cite{Wu2023AutoGen} provides infrastructure for multi-agent conversations. Generative Agents \cite{Park2023GenerativeAgents} simulate human-like behaviors in interactive sandboxes. These works establish the viability of multi-agent architectures; their evaluations focus on case studies and qualitative analyses, creating an opportunity for standardized benchmark evaluation against leading single models.
 
 \subsubsection{2.2 MCL Conceptual Framework}\label{mcl-framework}
 
@@ -168,7 +168,7 @@ The MCL framework \cite{Zhang2025MCL} models agent organizations as task graphs 
 
 \subsubsection{2.3 Benchmark-Based Evaluation}\label{benchmark-evaluation}
 
-LiveBench \cite{White2024LiveBench} is designed to resist contamination through monthly question refresh across diverse sources. Each monthly release provides a fixed leaderboard, enabling temporally fair comparison. IFEval \cite{Zhou2024IFEval} evaluates instruction following through 25 verifiable constraint types (length, format, keyword, language) with fully programmatic regex-based scoring. Unlike LLM-judged benchmarks, IFEval scores are deterministic and reproducible. Recent work on inference-time compute scaling \cite{Brown2024LLMonkeys,Chen2024CompoundInference} shows that repeated sampling and majority voting can raise output quality. MCL-Team differs by structuring the collaboration: models cross-reference rather than vote, and a dedicated summarizer produces the final output rather than a simple majority rule.
+LiveBench \cite{White2024LiveBench} is designed to resist contamination through monthly question refresh across diverse sources. Each monthly release provides a fixed leaderboard, enabling temporally fair comparison. IFEval \cite{Zhou2024IFEval} evaluates instruction following through 25 verifiable constraint types (length, format, keyword, language) with fully programmatic regex-based scoring. Unlike LLM-judged benchmarks, IFEval scores are deterministic and reproducible. Recent work on inference-time compute scaling \cite{Brown2024LLMonkeys,Chen2024CompoundInference} shows that repeated sampling and majority voting can raise output quality. MCL-Team differs by applying structured internal coordination — division of labor, peer review, and coordinated fusion — rather than treating each model output as an independent sample.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
