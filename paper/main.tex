@@ -124,7 +124,7 @@
 
 \subsection{Abstract}\label{abstract}
 
-We present MCL-Team, a minimal multi-model collaboration algorithm that applies the Meta-Coordination Layer (MCL) framework to public benchmarks. The algorithm consists of three stages: parallel generation by heterogeneous models, an optional cross-reference round in which each model sees others' outputs and revises its answer, and fusion by a dedicated summarizer. Configured across three quality-cost tiers (Junior, Senior, Principal), MCL-Team produces Language (93.5--94.2) and Instruction Following (87.4--88.8) scores exceeding all single models on the LiveBench 2026-01 leaderboard; Reasoning climbs from 84.5 (Junior) to 97.0 (Principal). On IFEval, the algorithm achieves 92.6\% prompt-level strict accuracy and 95.0\% instruction-level strict accuracy, 5.3--8.9 points above tested single-model competitors. The cross-reference round alone contributes +6.3 Reasoning points (Junior $\rightarrow$ Senior ablation, identical models). Multi-model collaboration increases token consumption by 5--10$\times$ and latency by 2--10$\times$ relative to a single call. Benchmark result packages, model cards, and an OpenAI-compatible API endpoint are available for independent verification.
+We present MCL-Team, a multi-model collaboration algorithm that operationalizes the Meta-Coordination Layer (MCL) framework \cite{Zhang2025MCL} for public benchmark evaluation. The algorithm applies MCL coordination mechanisms---including heterogeneous parallel generation, cross-optimization, and fusion-based selection---across three quality-cost tiers (Junior, Senior, Principal). On the LiveBench 2026-01 leaderboard, MCL-Team produces Language (93.5--94.2) and Instruction Following (87.4--88.8) scores exceeding all single models; Reasoning climbs from 84.5 (Junior) to 97.0 (Principal). On IFEval, the algorithm achieves 92.6\% prompt-level strict accuracy and 95.0\% instruction-level strict accuracy, 5.3--8.9 points above tested single-model competitors. A clean ablation (Junior $\rightarrow$ Senior, identical models, one additional coordination round) yields +6.3 Reasoning points, isolating the contribution of the coordination mechanism from model quality. Multi-model collaboration increases token consumption by 5--10$\times$ and latency by 2--10$\times$ relative to a single call. Benchmark result packages, model cards, and an OpenAI-compatible API endpoint are available for independent verification.
 
 \textbf{Keywords}: Multi-agent collaboration; Meta-Coordination Layer; LiveBench; IFEval; Multi-model; Benchmark
 
@@ -145,7 +145,7 @@ Our contributions are:
 \begin{itemize}
 \tightlist
 \item
-  \textbf{A minimal collaboration algorithm}: A three-stage pipeline---parallel generation, optional cross-reference correction, fusion---that is fully specified in one paragraph yet produces measurable quality gains.
+  \textbf{A minimal collaboration algorithm}: A compact application of MCL coordination mechanisms---heterogeneous parallel generation, cross-optimization, and fusion-based selection---that produces measurable quality gains over single-model baselines.
 \item
   \textbf{Standardized benchmark results}: Language (93.5--94.2) and IF (87.4--88.8) above all single models on the LiveBench leaderboard; Reasoning from 84.5 (Junior) to 90.8 (Senior) to 97.0 (Principal); IFEval prompt-level strict accuracy up to 92.6\% and instruction-level strict accuracy up to 95.0\%.
 \item
@@ -187,18 +187,13 @@ The Team algorithm is designed to be minimal---the simplest instantiation of the
 
 \subsubsection{3.2 Pipeline}\label{pipeline}
 
-The algorithm has three stages (Figure~\ref{fig1:team-pipeline}):
+The algorithm operates in three coordinated phases (Figure~\ref{fig1:team-pipeline}):
 
 \begin{enumerate}
 \tightlist
-\item \textbf{Preprocessing}: A lightweight language-detection module determines the output language.
-\item \textbf{Generation} (1--2 rounds):
-  \begin{itemize}
-  \tightlist
-  \item \textit{Round 1 (Independent)}: \(N\) heterogeneous models independently generate answers. No model observes any other model's output.
-  \item \textit{Round 2 (Cross-Reference, optional)}: Each model re-generates with full visibility into all Round~1 outputs. Models may adopt, refine, or rebut other approaches.
-  \end{itemize}
-\item \textbf{Fusion}: A dedicated summarizer receives the task and all final solver outputs, producing a single consolidated answer.
+\item \textbf{Preparation}: Input sanitization and language detection.
+\item \textbf{Generation with cross-optimization}: Heterogeneous models independently generate initial responses. When multiple rounds are configured, models receive access to peer outputs and produce revised responses that may adopt, refine, or rebut other approaches.
+\item \textbf{Fusion}: A dedicated model, distinct from the generation models, synthesizes the final output from all generated responses.
 \end{enumerate}
 
 \begin{figure}[H]
