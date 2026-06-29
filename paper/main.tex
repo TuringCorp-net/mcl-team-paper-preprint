@@ -344,14 +344,7 @@ All three independently converged on the same interpretation: Junior's Language 
 
 \subsubsection{6.1 Mechanism}\label{mechanism}
 
-The Junior $\rightarrow$ Senior ablation (+6.3 Reasoning) isolates the cross-reference effect. We identify three contributing factors:
-
-\begin{enumerate}
-\tightlist
-\item \textbf{Knowledge complementarity}: Different pretraining distributions cover different factual and reasoning domains. Cross-reference surfaces knowledge available to one model but not the other.
-\item \textbf{Path diversity}: Different model architectures and training objectives produce different reasoning chains. Exposure to alternatives enables correction of locally plausible but globally incorrect chains.
-\item \textbf{Consensus calibration}: Agreement between models provides a high-confidence signal for the fusion step. Disagreement triggers deeper reconciliation through the coordination mechanism.
-\end{enumerate}
+The Junior $\rightarrow$ Senior ablation (+6.3 Reasoning, identical resources) isolates the contribution of coordination. The effect is consistent with three mutually reinforcing factors: heterogeneous pretraining distributions providing complementary knowledge coverage, diverse reasoning paths enabling mutual correction, and agreement or disagreement between models serving as a calibration signal for the fusion step.
 
 \subsubsection{6.2 Scope and Limitations}\label{limitations}
 
@@ -359,13 +352,12 @@ The Junior $\rightarrow$ Senior ablation (+6.3 Reasoning) isolates the cross-ref
 \tightlist
 \item \textbf{Math and Data Analysis}: MCL-Team's scores in these dimensions remain below leading single models in their respective specialized categories. The current pipeline does not integrate structured tool use (code execution, database queries), which likely explains the gap.
 \item \textbf{Coding}: The LiveBench Coding category was not evaluated. Whether multi-model collaboration improves or degrades code generation is an open question.
-\item \textbf{Team size}: All experiments use \(N=2\) solvers. Scaling behavior for larger teams is unknown.
-\item \textbf{Implementation access}: Proprietary components (prompts, model routing, workflow controls) are not released. The algorithmic description enables independent reimplementation, but not exact reproduction.
+\item \textbf{Implementation access}: Proprietary components (prompts, model routing, workflow controls) are not released. The algorithmic description is sufficient for understanding the approach, but does not enable exact reproduction.
 \end{itemize}
 
 \subsubsection{6.3 Relationship to MCL}\label{relationship}
 
-This paper provides the first public benchmark validation of the MCL hypothesis \cite{Zhang2025MCL}. The Team algorithm is the foundational member of the cooperative cross-discussion family; its strong benchmark performance suggests that richer MCL configurations (competitive debate, co-opetitive hybrids) merit further investigation.
+This paper provides the first public benchmark validation of the MCL hypothesis \cite{Zhang2025MCL}. The Team algorithm is the foundational member of the cooperative cross-discussion family; its strong benchmark performance suggests that more complex human-team-like collaboration algorithms merit further investigation.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
