@@ -116,6 +116,8 @@
   \textbf{Version}: anonymized
 \item
   \textbf{Disclosure Boundary}: This report discloses the high-level algorithmic pipeline, benchmark methodology, and all evaluation results. Proprietary prompts, model routing configurations, and implementation-level workflow controls remain unpublished.
+\item
+  \textbf{Repositories}: LaTeX source: \url{https://github.com/TuringCorp-net/mcl-team-paper-preprint}. Benchmark result packages, model cards, and evaluation methodology: \url{https://github.com/TuringCorp-net/turingcorp-llm}.
 \end{itemize}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
@@ -268,6 +270,10 @@ For LiveBench, we compare against the public 2026-01 leaderboard: GPT-5.5 Thinki
 \subsubsection{4.4 Cross-Validation Protocol}\label{cross-validation}
 
 We submitted the LiveBench leaderboard data and MCL-Team Junior scores to three independent LLMs---DeepSeek V4, Gemini 2.5 Pro, and ChatGPT---with identical instructions: analyze the relative rankings, identify statistical anomalies, and characterize the capability profile. Each LLM received the same structured data tables and produced an independent written analysis. Their conclusions were compared for convergence.
+
+\subsubsection{4.5 Data Availability}\label{data-availability}
+
+All benchmark result packages (LiveBench and IFEval raw outputs for Junior, Senior, and Principal tiers), model cards documenting tier configurations, and evaluation methodology are publicly available at \url{https://github.com/TuringCorp-net/turingcorp-llm}. The paper LaTeX source is available at \url{https://github.com/TuringCorp-net/mcl-team-paper-preprint}. The MCL-Team API endpoint used for evaluation is the same public endpoint at \texttt{api.turingcorp.net/v1} accessible to external users. Proprietary implementation components (prompts, model routing, workflow controls) are not included in the public repositories.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
