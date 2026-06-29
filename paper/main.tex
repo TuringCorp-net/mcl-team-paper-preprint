@@ -124,40 +124,34 @@
 
 \subsection{Abstract}\label{abstract}
 
-The Meta-Coordination Layer (MCL) conceptual framework proposes that human organizational practices---role specialization, peer review, and deliberation-to-convergence---can be operationalized in multi-agent systems to improve output quality. This paper presents MCL-Team, a minimal realization of MCL, and evaluates it on LiveBench and IFEval, two public, contamination-resistant benchmarks. The Team algorithm consists of a three-stage pipeline: parallel generation by heterogeneous models, optional cross-reference correction, and fusion. Across three quality-cost tiers (Junior, Senior, Principal), MCL-Team achieves Language (93.5--94.2) and Instruction Following (87.4--88.8) scores that surpass all single models on the LiveBench public leaderboard, while scaling Reasoning from 84.5 to 97.0. On IFEval, MCL-Team reaches 92.6\% prompt-level strict accuracy and 95.0\% instruction-level strict accuracy, 5--9 points above tested competitors across both metrics. Collaboration increases token usage (5--10$\times$) and latency (2--10$\times$), defining an explicit cost-quality trade-off. Results are cross-validated by independent LLM analysis from DeepSeek, Gemini, and ChatGPT, all of which converge on the same ranking and score-profile interpretation. We conclude that minimal multi-model collaboration, when structured under MCL principles, reliably surpasses single-model baselines on quality-sensitive tasks.
+We present MCL-Team, a minimal multi-model collaboration algorithm that applies the Meta-Coordination Layer (MCL) framework to public benchmarks. The algorithm consists of three stages: parallel generation by heterogeneous models, an optional cross-reference round in which each model sees others' outputs and revises its answer, and fusion by a dedicated summarizer. Configured across three quality-cost tiers (Junior, Senior, Principal), MCL-Team produces Language (93.5--94.2) and Instruction Following (87.4--88.8) scores exceeding all single models on the LiveBench 2026-01 leaderboard; Reasoning climbs from 84.5 (Junior) to 97.0 (Principal). On IFEval, the algorithm achieves 92.6\% prompt-level strict accuracy and 95.0\% instruction-level strict accuracy, 5.3--8.9 points above tested single-model competitors. The cross-reference round alone contributes +6.3 Reasoning points (Junior $\rightarrow$ Senior ablation, identical models). Multi-model collaboration increases token consumption by 5--10$\times$ and latency by 2--10$\times$ relative to a single call. Benchmark result packages, model cards, and an OpenAI-compatible API endpoint are available for independent verification.
 
-\textbf{Keywords}: Multi-agent; Meta-Coordination Layer; Team algorithm; LiveBench; IFEval; Multi-model collaboration; Cost-quality trade-off
+\textbf{Keywords}: Multi-agent collaboration; Meta-Coordination Layer; LiveBench; IFEval; Multi-model; Benchmark
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{1 Introduction}\label{introduction}
 
-Large language models have made rapid progress, but single models still face inherent limitations: fixed analytical patterns, narrow pretraining coverage, and limited capacity for iterative self-correction. Multi-agent approaches have been proposed as a remedy, yet most existing work remains at the framework level, lacking rigorous public benchmark validation \cite{Hong2023MetaGPT,Li2023CAMEL,Wu2023AutoGen}.
+Single large language models face inherent constraints: fixed analytical patterns shaped by pretraining distributions, limited capacity for self-correction during generation, and reasoning gaps that cannot be fully resolved through scale alone. Multi-agent approaches have been proposed to address these constraints \cite{Hong2023MetaGPT,Li2023CAMEL,Wu2023AutoGen}, yet most existing work remains at the framework level. Few multi-agent systems have been evaluated against leading single models on standardized, contamination-resistant public benchmarks under protocols that permit direct comparison.
 
-The Meta-Coordination Layer (MCL) framework \cite{Zhang2025MCL} proposed transferring human organizational practices---role specialization, peer review, deliberation-to-convergence---into agent governance. That work provided a conceptual foundation and initial human preference studies (\(n=59\)), but raised an open question: how does an MCL-based system perform on standard, contamination-resistant benchmarks against the best single models?
+The Meta-Coordination Layer (MCL) framework \cite{Zhang2025MCL} introduced a formalism for agent collaboration: a task graph \(G=(V,E)\) with role contracts, governance checks, and convergence gates. It proposed five collaboration algorithm families and provided initial human preference evidence (\(n=59\)) that structured multi-agent organizations improve output quality over single-model baselines. However, the original MCL work did not evaluate any concrete algorithm on public benchmarks, leaving open the question of whether the framework's claimed benefits translate to standard, third-party performance measures.
 
-This paper answers that question. We present MCL-Team, a minimal realization of the MCL concept, and evaluate it on two public benchmarks:
+This paper addresses that gap. We implement MCL-Team, the simplest algorithm in the cooperative cross-discussion family, and evaluate it on two public benchmarks---LiveBench (2026-01 leaderboard snapshot, 682 questions) and IFEval (541 prompts, 25 verifiable instruction types, programmatic scoring). Both benchmarks are designed to resist contamination: LiveBench refreshes questions monthly \cite{White2024LiveBench}, and IFEval uses rule-based verification with no LLM judge \cite{Zhou2024IFEval}.
 
-\begin{itemize}
-\tightlist
-\item
-  \textbf{LiveBench} (2026-01 snapshot): 682 questions across 6 categories. The most contamination-resistant public benchmark with a fixed monthly leaderboard \cite{White2024LiveBench}.
-\item
-  \textbf{IFEval}: 541 prompts with 25 verifiable instruction types. Fully programmatic scoring---zero LLM-judge bias \cite{Zhou2024IFEval}.
-\end{itemize}
+We configure three quality-cost tiers (Junior, Senior, Principal) by varying model class and the number of collaboration rounds. The Junior $\rightarrow$ Senior comparison isolates the effect of the cross-reference round: identical models, with Senior adding one round of cross-reference correction. We also conduct an independent cross-validation by submitting the benchmark data to three LLM analysts (DeepSeek V4, Gemini 2.5 Pro, ChatGPT), who independently converge on the same capability profile.
 
 Our contributions are:
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Algorithm}: A minimal MCL pipeline---parallel generation, cross-reference correction, fusion---that is simple enough to describe in one paragraph yet produces substantial quality gains.
+  \textbf{A minimal collaboration algorithm}: A three-stage pipeline---parallel generation, optional cross-reference correction, fusion---that is fully specified in one paragraph yet produces measurable quality gains.
 \item
-  \textbf{Benchmark results}: Language (93.5--94.2) and IF (87.4--88.8) surpassing all single models on the LiveBench leaderboard; Reasoning scaled from 84.5 (Junior) to 90.8 (Senior) to 97.0 (Principal); IFEval prompt-level strict accuracy up to 92.6\% and instruction-level strict accuracy up to 95.0\%.
+  \textbf{Standardized benchmark results}: Language (93.5--94.2) and IF (87.4--88.8) above all single models on the LiveBench leaderboard; Reasoning from 84.5 (Junior) to 90.8 (Senior) to 97.0 (Principal); IFEval prompt-level strict accuracy up to 92.6\% and instruction-level strict accuracy up to 95.0\%.
 \item
-  \textbf{Independent cross-validation}: Three leading LLMs (DeepSeek V4, Gemini 2.5 Pro, ChatGPT) independently analyzed the results against the public leaderboard. All three converged on the same conclusion: Language and IF are world-leading, Reasoning is top-tier, and the score profile is consistent with a multi-model architecture.
+  \textbf{A clean ablation}: The Junior $\rightarrow$ Senior transition (same models, one additional cross-reference round) yields +6.3 Reasoning and +4.9 Math, establishing that the collaboration mechanism---not model quality---drives the gains.
 \item
-  \textbf{Cost-quality characterization}: Collaboration requires 5--10$\times$ tokens and 2--10$\times$ latency, situating MCL-Team in quality-first scenarios while single models remain preferable for real-time, cost-sensitive use cases.
+  \textbf{Quantified cost structure}: Multi-model collaboration requires 5--10$\times$ tokens and 2--10$\times$ latency, defining a transparent cost-quality frontier.
 \end{itemize}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
@@ -166,49 +160,45 @@ Our contributions are:
 
 \subsubsection{2.1 Multi-Agent Frameworks}\label{multi-agent-frameworks}
 
-Prior multi-agent studies emphasize task decomposition and role-playing. MetaGPT \cite{Hong2023MetaGPT} encodes software engineering workflows as SOPs. CAMEL \cite{Li2023CAMEL} explores communicative agents via role-playing. AutoGen \cite{Wu2023AutoGen} provides a general conversation framework. Generative Agents \cite{Park2023GenerativeAgents} simulate human-like behaviors in sandbox environments. These works demonstrate the potential of multi-agent systems but lack rigorous public benchmark validation against leading single models under standardized protocols.
+MetaGPT \cite{Hong2023MetaGPT} encodes software engineering workflows as standardized operating procedures for role-playing agents. CAMEL \cite{Li2023CAMEL} studies communicative agent behavior through role assignment in simulated societies. AutoGen \cite{Wu2023AutoGen} provides infrastructure for multi-agent conversations. Generative Agents \cite{Park2023GenerativeAgents} simulate human-like behaviors in interactive sandboxes. These works demonstrate architectural promise but do not report standardized benchmark scores against leading single models; their evaluations emphasize case studies, qualitative analyses, or custom metrics that do not support direct comparison.
 
 \subsubsection{2.2 MCL Conceptual Framework}\label{mcl-framework}
 
-The MCL framework \cite{Zhang2025MCL} models agent collaboration as a task graph \(G=(V,E)\) with role contracts, governance checks, and convergence gates. It proposed five collaboration algorithm families (cooperative, competitive, co-opetitive, cross-discussion, iterative decision-making) and validated the concept through human preference studies. The present work implements the cooperative cross-discussion family as the Team algorithm and provides the first public benchmark validation.
+The MCL framework \cite{Zhang2025MCL} models agent organizations as task graphs \(G=(V,E)\) with five algorithm families: cooperative, competitive, co-opetitive, cross-discussion, and iterative decision-making. The framework was validated through human preference studies (academia \(n=14\), industry \(n=45\)) comparing MCL-organized agent teams against single-model baselines. The present work selects the simplest cooperative cross-discussion variant, instantiates it as the Team algorithm, and provides the first public benchmark evaluation of any MCL-based system.
 
-\subsubsection{2.3 Benchmark-Driven Evaluation}\label{benchmark-evaluation}
+\subsubsection{2.3 Benchmark-Based Evaluation}\label{benchmark-evaluation}
 
-LiveBench \cite{White2024LiveBench} is designed to resist contamination through monthly question refresh and diverse data sources. IFEval \cite{Zhou2024IFEval} evaluates instruction following through 25 verifiable constraint types with programmatic scoring, eliminating LLM-judge bias. AgentBench \cite{Liu2023AgentBench} and related benchmarks \cite{Wang2023Voyager} target agent capabilities but do not provide the same contamination resistance or temporal fairness guarantees. These benchmarks are well-suited to multi-agent evaluation because they prioritize instruction adherence and language quality---dimensions where collaboration can compensate for single-model blind spots.
-
-\subsubsection{2.4 Inference-Time Scaling}\label{inference-scaling}
-
-Recent work on inference-time compute scaling \cite{Brown2024LLMonkeys,Chen2024CompoundInference} shows that repeated sampling and voting can improve output quality. MCL-Team differs by structuring the collaboration: models do not merely vote but cross-reference each other's outputs in a dedicated correction round, and a separate summarizer fuses the results. This structured approach yields larger gains per unit of compute than undirected repeated sampling.
+LiveBench \cite{White2024LiveBench} is designed to resist contamination through monthly question refresh across diverse sources. Each monthly release provides a fixed leaderboard, enabling temporally fair comparison. IFEval \cite{Zhou2024IFEval} evaluates instruction following through 25 verifiable constraint types (length, format, keyword, language) with fully programmatic regex-based scoring. Unlike LLM-judged benchmarks, IFEval scores are deterministic and reproducible. Recent work on inference-time compute scaling \cite{Brown2024LLMonkeys,Chen2024CompoundInference} shows that repeated sampling and majority voting can raise output quality. MCL-Team differs by structuring the collaboration: models cross-reference rather than vote, and a dedicated summarizer produces the final output rather than a simple majority rule.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3 Method: MCL-Team Algorithm}\label{method}
+\subsection{3 Method}\label{method}
 
 \subsubsection{3.1 Design Principles}\label{design-principles}
 
-The Team algorithm is designed to be \textbf{minimal}---the simplest pipeline capable of demonstrating the MCL hypothesis. Three principles guide the design:
+The Team algorithm is designed to be minimal---the simplest instantiation of the MCL cooperative cross-discussion family. Three principles:
 
 \begin{enumerate}
 \tightlist
-\item \textbf{Model heterogeneity}: Different pretraining distributions and reasoning styles produce genuinely diverse candidate answers to the same prompt.
-\item \textbf{Structured cross-reference}: When models see each other's outputs before a second pass, they correct blind spots and converge toward better answers.
-\item \textbf{Independent fusion}: A dedicated summarizer model, seeing all final outputs, produces a consolidated answer superior to any single model's output.
+\item \textbf{Model heterogeneity}: Models with different pretraining distributions and architectures produce genuinely diverse responses to the same prompt.
+\item \textbf{Structured cross-reference}: When each model sees the others' first-pass outputs, it can identify and correct its own blind spots in a second pass.
+\item \textbf{Independent fusion}: A dedicated summarizer, distinct from the solver models, produces the final consolidated output.
 \end{enumerate}
 
 \subsubsection{3.2 Pipeline}\label{pipeline}
 
-The algorithm consists of three stages (Figure~\ref{fig1:team-pipeline}):
+The algorithm has three stages (Figure~\ref{fig1:team-pipeline}):
 
 \begin{enumerate}
 \tightlist
-\item \textbf{Preprocessing}: A lightweight module determines output language and performs input sanitization.
+\item \textbf{Preprocessing}: A lightweight language-detection module determines the output language.
 \item \textbf{Generation} (1--2 rounds):
   \begin{itemize}
   \tightlist
-  \item \textit{Round 1 (Independent)}: \(N\) heterogeneous models independently generate answers to the same task. No model sees the output of any other.
-  \item \textit{Round 2 (Cross-Reference, optional)}: Each model re-generates its answer with full visibility into all Round~1 outputs. Models may adopt, refine, or rebut others' approaches.
+  \item \textit{Round 1 (Independent)}: \(N\) heterogeneous models independently generate answers. No model observes any other model's output.
+  \item \textit{Round 2 (Cross-Reference, optional)}: Each model re-generates with full visibility into all Round~1 outputs. Models may adopt, refine, or rebut other approaches.
   \end{itemize}
-\item \textbf{Fusion}: A dedicated summarizer receives the task and all final solver outputs, then produces a single consolidated answer.
+\item \textbf{Fusion}: A dedicated summarizer receives the task and all final solver outputs, producing a single consolidated answer.
 \end{enumerate}
 
 \begin{figure}[H]
@@ -220,11 +210,11 @@ The algorithm consists of three stages (Figure~\ref{fig1:team-pipeline}):
 
 \subsubsection{3.3 Quality-Cost Tiers}\label{tiers}
 
-Three tiers provide explicit quality-cost trade-offs (Table~\ref{tab:tiers}):
+Three tiers offer explicit quality-cost trade-offs (Table~\ref{tab:tiers}). Junior and Senior use identical models, differing only in the number of rounds. This provides a natural ablation: any performance difference between Junior and Senior is attributable to the cross-reference mechanism. Principal adds stronger models.
 
 \begin{table}[H]
 \centering
-\caption{MCL-Team tiers. Higher tiers add cross-reference rounds and/or stronger models.}
+\caption{MCL-Team tiers.}
 \label{tab:tiers}
 \begin{tabular}{@{}lcc@{}}
 \toprule
@@ -237,11 +227,9 @@ Principal & Pro & 2 \\
 \end{tabular}
 \end{table}
 
-The Junior $\rightarrow$ Senior comparison is a natural ablation: identical models, with the only difference being the cross-reference round. Any performance gain is attributable to the collaboration mechanism, not model quality.
-
 \subsubsection{3.4 Implementation}\label{implementation}
 
-MCL-Team is deployed as a Cloudflare Worker behind an OpenAI-compatible API endpoint. Evaluation requests are routed through an AI Gateway that dispatches to third-party model providers. This report discloses the high-level algorithmic structure; proprietary prompts, model routing configurations, and implementation details remain confidential. The architectural description provided is sufficient for independent researchers to understand and conceptually replicate the approach.
+MCL-Team is deployed as a Cloudflare Worker behind an OpenAI-compatible API endpoint (\texttt{/v1/chat/completions}). Requests are routed through an AI Gateway to third-party model providers. Proprietary prompts, model routing configurations, and implementation-level workflow controls are not disclosed. The high-level algorithmic description in this section provides sufficient detail for independent researchers to understand the approach and construct their own implementations.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -249,31 +237,27 @@ MCL-Team is deployed as a Cloudflare Worker behind an OpenAI-compatible API endp
 
 \subsubsection{4.1 Benchmarks}\label{benchmarks}
 
-\textbf{LiveBench} (2026-01 leaderboard snapshot): 682 questions across 6 categories---Language, Instruction Following, Reasoning, Math, Data Analysis, and Coding. We use the standard evaluation protocol with zero modifications to questions or scoring methodology. Results are compared against the public leaderboard for the same monthly snapshot, ensuring temporal fairness---all compared models were evaluated on the same question set.
+\textbf{LiveBench} (2026-01 leaderboard snapshot): 682 questions across 6 categories---Language, Instruction Following, Reasoning, Math, Data Analysis, and Coding. We use the standard evaluation protocol with zero modifications. All comparisons use the same monthly snapshot.
 
-\textbf{IFEval}: 541 prompts covering 25 verifiable instruction types (length constraints, format requirements, keyword inclusion, language switching, etc.). Scoring is fully programmatic: each response either satisfies a constraint or does not. No LLM judge is involved. We report both strict accuracy (all constraints must be satisfied) and loose accuracy (lenient matching).
+\textbf{IFEval}: 541 prompts covering 25 verifiable instruction types. Scoring is programmatic; each response either satisfies a constraint or it does not. We report four metrics: prompt-level strict/loose (whether \textit{all} instructions in a prompt are satisfied) and instruction-level strict/loose (the fraction of \textit{individual} instructions satisfied across all prompts).
 
 \subsubsection{4.2 Protocol}\label{protocol}
 
 \begin{itemize}
 \tightlist
 \item \textbf{Framework}: lm-eval-harness v0.4.12, unmodified.
-\item \textbf{Endpoint}: An OpenAI-compatible chat completions API (\texttt{/v1/chat/completions}). Researchers may request an API key for reproduction and independent verification; see the public repository at \url{https://github.com/TuringCorp-net/turingcorp-llm} for access instructions.
+\item \textbf{Endpoint}: An OpenAI-compatible chat completions API. Researchers may request an API key for independent reproduction; see \url{https://github.com/TuringCorp-net/turingcorp-llm}.
 \item \textbf{Parameters}: Temperature 0.0, identical across all runs. No benchmark-specific prompt engineering.
-\item \textbf{No cherry-picking}: All runs are first and only runs for each tier-benchmark pair. Results are reported in full, including weak dimensions (Math, Data Analysis).
+\item \textbf{Reporting}: All runs are first and only runs for each tier-benchmark pair. Results are reported in full.
 \end{itemize}
 
 \subsubsection{4.3 Baselines}\label{baselines}
 
-For LiveBench, we compare against the public 2026-01 leaderboard: GPT-5.5 Thinking xHigh Effort, Claude 4.8 Opus xHigh, Gemini 3.5 Flash High, Claude Fable 5 xHigh, Qwen 3.7 Max, and others. For IFEval, we compare against published scores for GPT-4o, Claude Opus 4, and Llama-3.1 405B.
+LiveBench baselines are drawn from the public 2026-01 leaderboard: GPT-5.5 Thinking xHigh Effort, Claude 4.8 Opus xHigh, Gemini 3.5 Flash High, Claude Fable 5 xHigh, Qwen 3.7 Max. IFEval baselines are published scores for GPT-4o, Claude Opus 4, and Llama-3.1 405B.
 
-\subsubsection{4.4 Cross-Validation Protocol}\label{cross-validation}
+\subsubsection{4.4 Data Availability}\label{data-availability}
 
-We submitted the LiveBench leaderboard data and MCL-Team Junior scores to three independent LLMs---DeepSeek V4, Gemini 2.5 Pro, and ChatGPT---with identical instructions: analyze the relative rankings, identify statistical anomalies, and characterize the capability profile. Each LLM received the same structured data tables and produced an independent written analysis. Their conclusions were compared for convergence.
-
-\subsubsection{4.5 Data Availability}\label{data-availability}
-
-All benchmark result packages (LiveBench and IFEval raw outputs for Junior, Senior, and Principal tiers), model cards documenting tier configurations, and evaluation methodology are publicly available at \url{https://github.com/TuringCorp-net/turingcorp-llm}. The paper LaTeX source is available at \url{https://github.com/TuringCorp-net/mcl-team-paper-preprint}. The MCL-Team API endpoint used for evaluation is an OpenAI-compatible chat completions API. Researchers may request an API key for independent reproduction and verification. Proprietary implementation components (prompts, model routing, workflow controls) are not included in the public repositories.
+All benchmark result packages (LiveBench and IFEval raw outputs for all three tiers), model cards, and evaluation methodology are available at \url{https://github.com/TuringCorp-net/turingcorp-llm}. The paper LaTeX source is available at \url{https://github.com/TuringCorp-net/mcl-team-paper-preprint}.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -281,11 +265,11 @@ All benchmark result packages (LiveBench and IFEval raw outputs for Junior, Seni
 
 \subsubsection{5.1 LiveBench}\label{livebench-results}
 
-Table~\ref{tab:livebench} presents the full LiveBench results across all three tiers.
+Table~\ref{tab:livebench} reports the full LiveBench results.
 
 \begin{table}[H]
 \centering
-\caption{LiveBench (2026-01) results. Reasoning, Math, and Data Analysis scale with tier; Language and IF are already near-ceiling at Junior.}
+\caption{LiveBench (2026-01) results across tiers.}
 \label{tab:livebench}
 \begin{tabular}{@{}lcccccc@{}}
 \toprule
@@ -298,13 +282,15 @@ Principal & \textbf{85.9} & 94.0 & 86.9 & \textbf{97.0} & 85.0 & 66.5 \\
 \end{tabular}
 \end{table}
 
-\subsubsection{5.2 Versus Leading Single Models}\label{comparison}
+Language and IF are already near-ceiling at Junior (93.5, 87.4) and improve marginally with additional rounds. Reasoning, Math, and Data Analysis scale more substantially with tier. Principal achieves the highest Overall (85.9) and Reasoning (97.0) scores.
 
-Table~\ref{tab:comparison} compares MCL-Team Principal against top single models on the same leaderboard.
+\subsubsection{5.2 Comparison with Leading Single Models}\label{comparison}
+
+Table~\ref{tab:comparison} compares MCL-Team against top single models on the same LiveBench leaderboard.
 
 \begin{table}[H]
 \centering
-\caption{MCL-Team Principal vs.\ leading single models, LiveBench 2026-01.}
+\caption{MCL-Team Principal vs.\ single models, LiveBench 2026-01.}
 \label{tab:comparison}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
@@ -319,29 +305,15 @@ Claude Fable 5 xHigh & 78.6 & 87.3 & 88.5 & 60.0 \\
 \end{tabular}
 \end{table}
 
-Key observations (best tier per dimension):
-\begin{itemize}
-\tightlist
-\item \textbf{Reasoning 97.0} (Principal): 7.3 points above the best single-model reasoner (Claude 4.8 Opus, 89.7).
-\item \textbf{Language 94.2} (Senior): 5.7 points above the best single model for language (Claude Fable 5, 88.5).
-\item \textbf{IF 88.8} (Senior): 13.2 points above the best single model for instruction following (Gemini 3.5 Flash, 75.6).
-\end{itemize}
+Across tiers, the best MCL-Team score exceeds the best single model in each dimension: Reasoning by 7.3 points (Principal 97.0 vs.\ Claude 4.8 Opus 89.7), Language by 5.7 points (Senior 94.2 vs.\ Claude Fable 5 88.5), and IF by 13.2 points (Senior 88.8 vs.\ Gemini 3.5 Flash 75.6).
 
 \subsubsection{5.3 IFEval}\label{ifeval-results}
 
-IFEval evaluates instruction following through 25 verifiable constraint types with fully programmatic scoring---no LLM judge is involved. We report two granularities:
-
-\begin{itemize}
-\tightlist
-\item \textbf{Prompt-level accuracy}: The fraction of prompts where \textit{all} instructions in the prompt are satisfied. This is the strictest measure.
-\item \textbf{Instruction-level accuracy}: The fraction of \textit{individual} instructions satisfied across all prompts. This captures partial compliance.
-\end{itemize}
-
-Each granularity has a strict and a loose variant (lenient matching for minor formatting deviations).
+IFEval uses programmatic scoring with no LLM judge. Table~\ref{tab:ifeval} reports all four metrics across tiers; Table~\ref{tab:ifeval-competitors} compares against published single-model scores.
 
 \begin{table}[H]
 \centering
-\caption{IFEval results across all three tiers. Prompt-level and instruction-level, strict and loose.}
+\caption{IFEval results across all three tiers.}
 \label{tab:ifeval}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
@@ -356,7 +328,7 @@ MCL-Team Principal & 92.4\% & 93.9\% & \textbf{95.0\%} & \textbf{96.0\%} \\
 
 \begin{table}[H]
 \centering
-\caption{IFEval comparison against published single-model scores.}
+\caption{IFEval vs.\ single-model competitors.}
 \label{tab:ifeval-competitors}
 \begin{tabular}{@{}lcc@{}}
 \toprule
@@ -372,114 +344,87 @@ Llama-3.1 405B     & 85.6\% & --- \\
 \end{tabular}
 \end{table}
 
-MCL-Team Senior achieves 92.6\% prompt-level strict accuracy---5.3 points above Claude Opus 4 (87.3\%), the best tested single-model competitor. MCL-Team Principal reaches 95.0\% instruction-level strict accuracy, meaning that on average, 95 out of 100 individual instructions are followed correctly. All results are programmatically scored with no LLM-judge bias.
+MCL-Team Senior achieves 92.6\% prompt-strict accuracy, 5.3 points above Claude Opus 4 (87.3\%), and 8.9 points above GPT-4o (83.7\%). Principal reaches 95.0\% instruction-strict accuracy, meaning 95\% of individual instructions are followed correctly across all 541 prompts. All scores are fully reproducible; no LLM judge is involved.
 
 \subsubsection{5.4 Ablation: The Cross-Reference Round}\label{ablation}
 
-Junior and Senior use identical models (standard-tier); Senior adds Round~2 (cross-reference). This isolates the collaboration effect:
+Junior and Senior use identical models; Senior adds Round~2 (cross-reference). This isolates the mechanism:
 
 \begin{itemize}
 \tightlist
-\item \textbf{Reasoning}: 84.5 $\rightarrow$ 90.8 (+6.3). The cross-reference round dramatically improves logical reasoning.
-\item \textbf{Math}: 75.5 $\rightarrow$ 80.4 (+4.9). Structured problem-solving benefits from seeing alternative solution paths.
-\item \textbf{Data Analysis}: 61.5 $\rightarrow$ 65.8 (+4.3). Gains exist but are more modest.
-\item \textbf{Language / IF}: Already high (93.5 / 87.4), improving marginally (+0.7 / +1.4).
+\item \textbf{Reasoning}: 84.5 $\rightarrow$ 90.8 (+6.3)
+\item \textbf{Math}: 75.5 $\rightarrow$ 80.4 (+4.9)
+\item \textbf{Data Analysis}: 61.5 $\rightarrow$ 65.8 (+4.3)
+\item \textbf{Language / IF}: 93.5 $\rightarrow$ 94.2 (+0.7) / 87.4 $\rightarrow$ 88.8 (+1.4)
 \end{itemize}
 
-This pattern---large gains in reasoning-intensive dimensions, small gains in near-ceiling dimensions---is consistent with the hypothesis that cross-reference primarily corrects model-specific reasoning gaps.
+The pattern---substantial gains in reasoning-intensive dimensions, modest gains in already-high dimensions---is consistent with cross-reference functioning primarily to correct model-specific reasoning gaps and blind spots.
 
-\subsubsection{5.5 Cost Analysis}\label{cost-analysis}
+\subsubsection{5.5 Cost Structure}\label{cost-analysis}
 
-Across all evaluations, multi-model collaboration increases token consumption by 5--10$\times$ relative to a single model call, with corresponding latency increases of 2--10$\times$. The Principal tier, with Pro models and two rounds, sits at the upper end of both ranges. The cost structure is transparent: \(N\) parallel calls in Round~1, another \(N\) in Round~2, plus one summary call. Figure~\ref{fig2:quality-cost} illustrates the quality-cost frontier.
+Multi-model collaboration increases token consumption by 5--10$\times$ and latency by 2--10$\times$ relative to a single model call. The cost is transparent: \(N\) parallel calls in Round~1, another \(N\) in Round~2, plus one summary call. Principal, with Pro models and two rounds, occupies the upper end of both ranges. Figure~\ref{fig2:quality-cost} maps the quality-cost frontier across tiers.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.55\linewidth]{F2.png}
-    \caption{MCL-Team tiers: overall score vs.\ token multiplier relative to a single model call.}
+    \caption{Overall LiveBench score vs.\ token multiplier relative to a single model call.}
     \label{fig2:quality-cost}
 \end{figure}
 
+\subsubsection{5.6 Independent LLM Cross-Validation}\label{cross-validation}
+
+To reduce analyst bias, we submitted the LiveBench 2026-01 leaderboard data and MCL-Team Junior scores to three LLMs---DeepSeek V4, Gemini 2.5 Pro, and ChatGPT---with identical instructions: rank the models, identify anomalies, and characterize the capability profile. All three independently converged on the same interpretation: Junior's Language (93.5) and IF (87.4) rank above all single models, the Reasoning score (84.5) places in the upper tier but below the strongest reasoning-specialized models, and Math/Data Analysis are the primary constraints on overall score. ChatGPT additionally noted that the Language $\gg$ Reasoning gap (93.5 vs.\ 84.5) is atypical for single models and aligns with a generate $\rightarrow$ verify $\rightarrow$ rewrite pipeline structure. The only divergence was in emphasis (deployment implications vs.\ statistical rigor vs.\ architectural interpretation). The full analysis is included in the supplementary materials.
+
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{6 Independent LLM Cross-Validation}\label{cross-validation-section}
+\subsection{6 Discussion}\label{discussion}
 
-To reduce analyst bias, we submitted the same LiveBench leaderboard data and MCL-Team scores to three independent LLMs with identical analysis instructions.
+\subsubsection{6.1 Mechanism}\label{mechanism}
 
-\subsubsection{6.1 Convergence}\label{convergence}
-
-All three analysts independently converged on these conclusions:
+The Junior $\rightarrow$ Senior ablation (+6.3 Reasoning) isolates the cross-reference effect. We identify three contributing factors:
 
 \begin{enumerate}
 \tightlist
-\item \textbf{Language and IF are world-leading}: All three ranked MCL-Team Junior first in both dimensions, noting the gaps (5--12 points) exceed what random variation would produce.
-\item \textbf{Reasoning is top-tier}: Junior (84.5) placed in the upper tier; Principal (97.0) was characterized as ``beyond any single model'' by all three.
-\item \textbf{Score profile reflects architecture}: ChatGPT explicitly noted the Language $\gg$ Reasoning gap (93.5 vs.\ 84.5) is atypical for single models and consistent with a multi-stage collaboration pipeline.
-\item \textbf{Math and Data Analysis are the primary constraints}: All three flagged these as the dimensions limiting overall score.
+\item \textbf{Knowledge complementarity}: Different pretraining distributions cover different factual and reasoning domains. Cross-reference surfaces knowledge available to one model but not the other.
+\item \textbf{Path diversity}: Different model architectures and training objectives produce different reasoning chains. Exposure to alternatives enables correction of locally plausible but globally incorrect chains.
+\item \textbf{Consensus calibration}: Agreement between models provides a high-confidence signal for the summarizer. Disagreement in Round~1 triggers explicit reconciliation in Round~2.
 \end{enumerate}
 
-\subsubsection{6.2 Divergence}\label{divergence}
-
-The only notable divergence was in emphasis: Gemini focused on enterprise deployment implications, DeepSeek on statistical rigor, and ChatGPT on architectural interpretation. None questioned the validity or significance of the results.
-
-\subsubsection{6.3 Significance}\label{significance-section}
-
-The convergence of three independent LLM analyses---with different training data, corporate alignment, and reasoning styles---provides stronger evidence than any single analysis. Their agreement substantially reduces the risk of biased or selective interpretation.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{7 Discussion}\label{discussion}
-
-\subsubsection{7.1 Why Does Minimal Collaboration Work?}\label{why-works}
-
-The Junior $\rightarrow$ Senior ablation (+6.3 Reasoning, same models) is the strongest evidence that the collaboration mechanism---not model quality---drives the gains. We hypothesize three mechanisms:
-
-\begin{enumerate}
-\tightlist
-\item \textbf{Blind-spot compensation}: Different pretraining distributions provide complementary knowledge coverage. Cross-reference fills each model's gaps.
-\item \textbf{Reasoning-path diversity}: Different architectures produce different reasoning chains. Exposure to alternatives in Round~2 enables correction of locally plausible but globally incorrect paths.
-\item \textbf{Consensus calibration}: When models agree, the summarizer adopts directly. When they disagree, the cross-reference round forces explicit reconciliation.
-\end{enumerate}
-
-\subsubsection{7.2 Cost-Quality Frontier}\label{cost-quality}
-
-MCL-Team is not suited to all use cases. The 5--10$\times$ token multiplier and 2--10$\times$ latency increase make it appropriate for research, consulting, and high-assurance domains (legal, medical, policy) where output quality determines value. Single-model workflows remain preferable for real-time chat and cost-sensitive applications.
-
-\subsubsection{7.3 Limitations}\label{limitations}
+\subsubsection{6.2 Scope and Limitations}\label{limitations}
 
 \begin{itemize}
 \tightlist
-\item \textbf{Math and Data Analysis}: Below leading single models. The current pipeline lacks structured tool use (code execution, data queries).
-\item \textbf{Coding}: Not evaluated. Future work should assess whether collaboration improves code generation.
-\item \textbf{Generalization}: All experiments use \(N=2\) solvers. Scaling laws for larger teams are unknown.
-\item \textbf{No open-source implementation}: Proprietary components are not released. The algorithmic description enables conceptual understanding and independent reimplementation, but not exact reproduction.
+\item \textbf{Math and Data Analysis}: MCL-Team's scores in these dimensions remain below leading single models in their respective specialized categories. The current pipeline does not integrate structured tool use (code execution, database queries), which likely explains the gap.
+\item \textbf{Coding}: The LiveBench Coding category was not evaluated. Whether multi-model collaboration improves or degrades code generation is an open question.
+\item \textbf{Team size}: All experiments use \(N=2\) solvers. Scaling behavior for larger teams is unknown.
+\item \textbf{Implementation access}: Proprietary components (prompts, model routing, workflow controls) are not released. The algorithmic description enables independent reimplementation, but not exact reproduction.
 \end{itemize}
 
-\subsubsection{7.4 Relationship to MCL Framework}\label{relationship}
+\subsubsection{6.3 Relationship to MCL}\label{relationship}
 
-This paper validates the core MCL hypothesis \cite{Zhang2025MCL}: structured multi-agent collaboration improves output quality on complex tasks. The Team algorithm is the simplest member of the cooperative cross-discussion family. Its success suggests that more sophisticated MCL organizations (competitive debate, co-opetitive hybrids) may yield further gains.
+This paper provides the first public benchmark validation of the MCL hypothesis \cite{Zhang2025MCL}. The Team algorithm is the simplest member of the cooperative cross-discussion family; its strong benchmark performance suggests that richer MCL configurations (competitive debate, co-opetitive hybrids) merit further investigation.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{8 Conclusion}\label{conclusion}
+\subsection{7 Conclusion}\label{conclusion}
 
-We have presented MCL-Team and demonstrated its effectiveness on LiveBench and IFEval:
+We have presented MCL-Team, a minimal multi-model collaboration algorithm, and evaluated it on LiveBench and IFEval. The key findings:
 
 \begin{itemize}
 \tightlist
-\item Language (94.2) and IF (88.8) surpass all single models on the LiveBench public leaderboard.
-\item Reasoning scales from 84.5 to 97.0 across tiers, with the cross-reference round alone contributing +6.3 points (Junior $\rightarrow$ Senior ablation).
-\item IFEval prompt-level strict accuracy up to 92.6\% and instruction-level strict accuracy up to 95.0\%, 5--9 points above tested single-model competitors on a fully programmatic benchmark.
-\item Independent cross-validation by three LLMs converges on the same interpretation.
-\item An explicit cost-quality trade-off (5--10$\times$ tokens, 2--10$\times$ latency) positions collaboration for quality-first scenarios.
+\item Language and IF scores (93.5--94.2, 87.4--88.8) exceed all single models on the LiveBench 2026-01 leaderboard.
+\item Reasoning scales from 84.5 to 97.0 across three quality-cost tiers. The cross-reference round alone contributes +6.3 points, isolated via a clean ablation.
+\item IFEval prompt-strict accuracy reaches 92.6\% (Senior) and instruction-strict accuracy reaches 95.0\% (Principal), 5.3--8.9 points above tested single-model competitors.
+\item Collaboration increases token consumption (5--10$\times$) and latency (2--10$\times$), defining an explicit cost-quality frontier.
 \end{itemize}
 
-The results support the MCL hypothesis with consistent, independently verified evidence. MCL-Team and single-model workflows are complementary technologies: the former for complex, quality-sensitive tasks; the latter for real-time, cost-sensitive interactions. We release this report to establish a public benchmark record and invite independent verification.
+MCL-Team and single-model workflows serve complementary roles: the former for quality-sensitive, non-real-time tasks; the latter for cost-sensitive and latency-constrained applications. Benchmark result packages and model cards are publicly available at \url{https://github.com/TuringCorp-net/turingcorp-llm}.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection*{Acknowledgments}\label{acknowledgments}
 
-We thank the developers of LiveBench and IFEval for maintaining contamination-resistant, programmatically scored benchmarks essential to this evaluation. The independent analyses by DeepSeek, Gemini, and ChatGPT contributed valuable cross-validation.
+We thank the developers of LiveBench and IFEval for maintaining contamination-resistant, programmatically scored benchmarks. The independent analyses by DeepSeek, Gemini, and ChatGPT provided useful cross-validation.
 
 \nocite{*}
 \bibliographystyle{unsrtnat}
