@@ -92,7 +92,6 @@
 
 \usepackage[numbers]{natbib}
 \usepackage{graphicx}
-\graphicspath{{figures/}}
 \usepackage{float}
 \usepackage{booktabs}
 
@@ -323,14 +322,7 @@ The pattern---substantial gains in reasoning-intensive dimensions, modest gains 
 
 \subsubsection{5.5 Cost Structure}\label{cost-analysis}
 
-Multi-model collaboration increases token consumption by 5--10$\times$ and latency by 2--10$\times$ relative to a single model call. The cost structure is transparent: each operating point involves a fixed number of internal model calls determined by the tier configuration. The Principal tier occupies the upper end of both cost ranges. Figure~\ref{fig2:quality-cost} maps the quality-cost frontier across tiers.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.55\linewidth]{F2.png}
-    \caption{Overall LiveBench score vs.\ token multiplier relative to a single model call.}
-    \label{fig2:quality-cost}
-\end{figure}
+Multi-model collaboration increases token consumption by 5--10$\times$ and latency by 2--10$\times$ relative to a single model call. The cost structure is transparent: each operating point involves a fixed number of internal model calls determined by the tier configuration. The Principal tier occupies the upper end of both cost ranges.
 
 \subsubsection{5.6 Independent Capability Analysis}\label{capability-analysis}
 
