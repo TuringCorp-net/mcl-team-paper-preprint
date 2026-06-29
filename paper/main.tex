@@ -124,7 +124,7 @@
 
 \subsection{Abstract}\label{abstract}
 
-We present MCL-Team, a multi-model collaboration algorithm that operationalizes the Meta-Coordination Layer (MCL) framework \cite{Zhang2025MCL} for public benchmark evaluation. The algorithm applies MCL coordination mechanisms---including heterogeneous parallel generation, cross-optimization, and fusion-based selection---across three quality-cost tiers (Junior, Senior, Principal). On the LiveBench 2026-01 leaderboard, MCL-Team produces Language (93.5--94.2) and Instruction Following (87.4--88.8) scores exceeding all single models; Reasoning climbs from 84.5 (Junior) to 97.0 (Principal). On IFEval, the algorithm achieves 92.6\% prompt-level strict accuracy and 95.0\% instruction-level strict accuracy, 5.3--8.9 points above tested single-model competitors. A clean ablation (Junior $\rightarrow$ Senior, identical models, one additional coordination round) yields +6.3 Reasoning points, isolating the contribution of the coordination mechanism from model quality. Multi-model collaboration increases token consumption by 5--10$\times$ and latency by 2--10$\times$ relative to a single call. Benchmark result packages, model cards, and an OpenAI-compatible API endpoint are available for independent verification.
+We present MCL-Team, a multi-model collaboration algorithm that operationalizes the Meta-Coordination Layer (MCL) framework \cite{Zhang2025MCL} for public benchmark evaluation. The algorithm applies MCL coordination mechanisms---including heterogeneous parallel generation, cross-optimization, and fusion-based selection---across three quality-cost tiers (Junior, Senior, Principal). On the LiveBench 2026-01 leaderboard, MCL-Team produces Language (93.5--94.2) and Instruction Following (87.4--88.8) scores exceeding all single models; Reasoning climbs from 84.5 (Junior) to 97.0 (Principal). On IFEval, the algorithm achieves 92.6\% prompt-level strict accuracy and 95.0\% instruction-level strict accuracy, 5.3--8.9 points above tested single-model competitors. A clean ablation (Junior $\rightarrow$ Senior, identical resource allocation, increased coordination depth) yields +6.3 Reasoning points, isolating the contribution of the coordination mechanism from model quality. Multi-model collaboration increases token consumption by 5--10$\times$ and latency by 2--10$\times$ relative to a single call. Benchmark result packages, model cards, and an OpenAI-compatible API endpoint are available for independent verification.
 
 \textbf{Keywords}: Multi-agent collaboration; Meta-Coordination Layer; LiveBench; IFEval; Multi-model; Benchmark
 
@@ -136,9 +136,9 @@ Single large language models face inherent constraints: fixed analytical pattern
 
 The Meta-Coordination Layer (MCL) framework \cite{Zhang2025MCL} introduced a formalism for agent collaboration: a task graph \(G=(V,E)\) with role contracts, governance checks, and convergence gates. It proposed five collaboration algorithm families and provided initial human preference evidence (\(n=59\)) that structured multi-agent organizations improve output quality over single-model baselines. However, the original MCL work did not evaluate any concrete algorithm on public benchmarks, leaving open the question of whether the framework's claimed benefits translate to standard, third-party performance measures.
 
-This paper addresses that gap. We implement MCL-Team, the simplest algorithm in the cooperative cross-discussion family, and evaluate it on two public benchmarks---LiveBench (2026-01 leaderboard snapshot, 682 questions) and IFEval (541 prompts, 25 verifiable instruction types, programmatic scoring). Both benchmarks are designed to resist contamination: LiveBench refreshes questions monthly \cite{White2024LiveBench}, and IFEval uses rule-based verification with no LLM judge \cite{Zhou2024IFEval}.
+This paper addresses that gap. We implement MCL-Team, the foundational algorithm in the cooperative cross-discussion family, and evaluate it on two public benchmarks---LiveBench (2026-01 leaderboard snapshot, 682 questions) and IFEval (541 prompts, 25 verifiable instruction types, programmatic scoring). Both benchmarks are designed to resist contamination: LiveBench refreshes questions monthly \cite{White2024LiveBench}, and IFEval uses rule-based verification with no LLM judge \cite{Zhou2024IFEval}.
 
-We configure three quality-cost tiers (Junior, Senior, Principal) by varying model class and the number of collaboration rounds. The Junior $\rightarrow$ Senior comparison isolates the effect of the cross-reference round: identical models, with Senior adding one round of cross-reference correction. We also conduct an independent cross-validation by submitting the benchmark data to three LLM analysts (DeepSeek V4, Gemini 2.5 Pro, ChatGPT), who independently converge on the same capability profile.
+We evaluate MCL-Team at three quality-cost operating points (Junior, Senior, Principal), configured through internal resource allocation and coordination depth. The Junior $\rightarrow$ Senior comparison serves as an ablation: identical resource allocation, differing only in coordination depth. We also conduct an independent cross-validation by submitting the benchmark data to three LLM analysts (DeepSeek V4, Gemini 2.5 Pro, ChatGPT), who independently converge on the same capability profile.
 
 Our contributions are:
 
@@ -149,7 +149,7 @@ Our contributions are:
 \item
   \textbf{Standardized benchmark results}: Language (93.5--94.2) and IF (87.4--88.8) above all single models on the LiveBench leaderboard; Reasoning from 84.5 (Junior) to 90.8 (Senior) to 97.0 (Principal); IFEval prompt-level strict accuracy up to 92.6\% and instruction-level strict accuracy up to 95.0\%.
 \item
-  \textbf{A clean ablation}: The Junior $\rightarrow$ Senior transition (same models, one additional cross-reference round) yields +6.3 Reasoning and +4.9 Math, establishing that the collaboration mechanism---not model quality---drives the gains.
+  \textbf{A clean ablation}: The Junior $\rightarrow$ Senior transition (identical resource allocation, increased coordination depth) yields +6.3 Reasoning and +4.9 Math, establishing that the coordination mechanism---not resource allocation---drives the gains.
 \item
   \textbf{Quantified cost structure}: Multi-model collaboration requires 5--10$\times$ tokens and 2--10$\times$ latency, defining a transparent cost-quality frontier.
 \end{itemize}
@@ -164,7 +164,7 @@ MetaGPT \cite{Hong2023MetaGPT} encodes software engineering workflows as standar
 
 \subsubsection{2.2 MCL Conceptual Framework}\label{mcl-framework}
 
-The MCL framework \cite{Zhang2025MCL} models agent organizations as task graphs \(G=(V,E)\) with five algorithm families: cooperative, competitive, co-opetitive, cross-discussion, and iterative decision-making. The framework was validated through human preference studies (academia \(n=14\), industry \(n=45\)) comparing MCL-organized agent teams against single-model baselines. The present work selects the simplest cooperative cross-discussion variant, instantiates it as the Team algorithm, and provides the first public benchmark evaluation of any MCL-based system.
+The MCL framework \cite{Zhang2025MCL} models agent organizations as task graphs \(G=(V,E)\) with five algorithm families: cooperative, competitive, co-opetitive, cross-discussion, and iterative decision-making. The framework was validated through human preference studies (academia \(n=14\), industry \(n=45\)) comparing MCL-organized agent teams against single-model baselines. The present work selects the foundational cooperative cross-discussion variant, instantiates it as the Team algorithm, and provides the first public benchmark evaluation of any MCL-based system.
 
 \subsubsection{2.3 Benchmark-Based Evaluation}\label{benchmark-evaluation}
 
@@ -176,7 +176,7 @@ LiveBench \cite{White2024LiveBench} is designed to resist contamination through 
 
 \subsubsection{3.1 Design Principles}\label{design-principles}
 
-The Team algorithm is designed to be minimal---the simplest instantiation of the MCL cooperative cross-discussion family. Three principles:
+The Team algorithm is designed to be minimal---the foundational instantiation of the MCL cooperative cross-discussion family. Three principles:
 
 \begin{enumerate}
 \tightlist
@@ -205,7 +205,7 @@ The algorithm operates in three coordinated phases (Figure~\ref{fig1:team-pipeli
 
 \subsubsection{3.3 Quality-Cost Tiers}\label{tiers}
 
-Three tiers offer explicit quality-cost trade-offs (Table~\ref{tab:tiers}). Junior and Senior use identical models, differing only in the number of rounds. This provides a natural ablation: any performance difference between Junior and Senior is attributable to the cross-reference mechanism. Principal adds stronger models.
+Three tiers offer explicit quality-cost trade-offs (Table~\ref{tab:tiers}). Junior and Senior share the same resource allocation, differing only in coordination depth. This provides an ablation: any performance difference between Junior and Senior is attributable to the coordination mechanism. Principal applies greater resource allocation.
 
 \begin{table}[H]
 \centering
@@ -343,7 +343,7 @@ MCL-Team Senior achieves 92.6\% prompt-strict accuracy, 5.3 points above Claude 
 
 \subsubsection{5.4 Ablation: The Cross-Reference Round}\label{ablation}
 
-Junior and Senior use identical models; Senior adds Round~2 (cross-reference). This isolates the mechanism:
+Junior and Senior share the same resource allocation; Senior applies additional coordination depth. This isolates the mechanism:
 
 \begin{itemize}
 \tightlist
@@ -397,7 +397,7 @@ The Junior $\rightarrow$ Senior ablation (+6.3 Reasoning) isolates the cross-ref
 
 \subsubsection{6.3 Relationship to MCL}\label{relationship}
 
-This paper provides the first public benchmark validation of the MCL hypothesis \cite{Zhang2025MCL}. The Team algorithm is the simplest member of the cooperative cross-discussion family; its strong benchmark performance suggests that richer MCL configurations (competitive debate, co-opetitive hybrids) merit further investigation.
+This paper provides the first public benchmark validation of the MCL hypothesis \cite{Zhang2025MCL}. The Team algorithm is the foundational member of the cooperative cross-discussion family; its strong benchmark performance suggests that richer MCL configurations (competitive debate, co-opetitive hybrids) merit further investigation.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -408,7 +408,7 @@ We have presented MCL-Team, a minimal multi-model collaboration algorithm, and e
 \begin{itemize}
 \tightlist
 \item Language and IF scores (93.5--94.2, 87.4--88.8) exceed all single models on the LiveBench 2026-01 leaderboard.
-\item Reasoning scales from 84.5 to 97.0 across three quality-cost tiers. The cross-reference round alone contributes +6.3 points, isolated via a clean ablation.
+\item Reasoning scales from 84.5 to 97.0 across three quality-cost tiers. Increased coordination depth alone contributes +6.3 points, isolated via a clean ablation.
 \item IFEval prompt-strict accuracy reaches 92.6\% (Senior) and instruction-strict accuracy reaches 95.0\% (Principal), 5.3--8.9 points above tested single-model competitors.
 \item Collaboration increases token consumption (5--10$\times$) and latency (2--10$\times$), defining an explicit cost-quality frontier.
 \end{itemize}
