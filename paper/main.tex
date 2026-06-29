@@ -258,7 +258,7 @@ MCL-Team is deployed as a Cloudflare Worker behind an OpenAI-compatible API endp
 \begin{itemize}
 \tightlist
 \item \textbf{Framework}: lm-eval-harness v0.4.12, unmodified.
-\item \textbf{Endpoint}: \texttt{api.turingcorp.net/v1}, the same OpenAI-compatible API available to external users.
+\item \textbf{Endpoint}: An OpenAI-compatible chat completions API (\texttt{/v1/chat/completions}). Researchers may request an API key for reproduction and independent verification; see the public repository at \url{https://github.com/TuringCorp-net/turingcorp-llm} for access instructions.
 \item \textbf{Parameters}: Temperature 0.0, identical across all runs. No benchmark-specific prompt engineering.
 \item \textbf{No cherry-picking}: All runs are first and only runs for each tier-benchmark pair. Results are reported in full, including weak dimensions (Math, Data Analysis).
 \end{itemize}
@@ -273,7 +273,7 @@ We submitted the LiveBench leaderboard data and MCL-Team Junior scores to three 
 
 \subsubsection{4.5 Data Availability}\label{data-availability}
 
-All benchmark result packages (LiveBench and IFEval raw outputs for Junior, Senior, and Principal tiers), model cards documenting tier configurations, and evaluation methodology are publicly available at \url{https://github.com/TuringCorp-net/turingcorp-llm}. The paper LaTeX source is available at \url{https://github.com/TuringCorp-net/mcl-team-paper-preprint}. The MCL-Team API endpoint used for evaluation is the same public endpoint at \texttt{api.turingcorp.net/v1} accessible to external users. Proprietary implementation components (prompts, model routing, workflow controls) are not included in the public repositories.
+All benchmark result packages (LiveBench and IFEval raw outputs for Junior, Senior, and Principal tiers), model cards documenting tier configurations, and evaluation methodology are publicly available at \url{https://github.com/TuringCorp-net/turingcorp-llm}. The paper LaTeX source is available at \url{https://github.com/TuringCorp-net/mcl-team-paper-preprint}. The MCL-Team API endpoint used for evaluation is an OpenAI-compatible chat completions API. Researchers may request an API key for independent reproduction and verification. Proprietary implementation components (prompts, model routing, workflow controls) are not included in the public repositories.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 

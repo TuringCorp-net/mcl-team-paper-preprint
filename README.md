@@ -16,7 +16,7 @@ paper/
 
 ## Links
 - MCL conceptual framework: https://doi.org/10.6084/m9.figshare.30645869
-- Project: https://www.TuringCorp.net/tools
+- API access (OpenAI-compatible): Researchers may request an API key for reproduction; see \url{https://github.com/TuringCorp-net/turingcorp-llm}
 
 ## License
 All content in this repository is licensed under **CC BY 4.0** (see `LICENSE-CC-BY-4.0.md`).
