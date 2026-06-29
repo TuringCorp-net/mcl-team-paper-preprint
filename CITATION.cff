@@ -5,6 +5,8 @@ authors:
   - family-names: Zhang
     given-names: Li
 year: 2026
+doi: 10.6084/m9.figshare.32824352
+url: https://doi.org/10.6084/m9.figshare.32824352
 preferred-citation:
   type: article
   title: "MCL-Team: Minimal Multi-Model Collaboration Surpasses Single Models on LiveBench and IFEval"
@@ -12,3 +14,4 @@ preferred-citation:
     - family-names: Zhang
       given-names: Li
   year: 2026
+  doi: 10.6084/m9.figshare.32824352
