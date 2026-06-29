@@ -138,7 +138,7 @@ The Meta-Coordination Layer (MCL) framework \cite{Zhang2025MCL} introduced a for
 
 This paper addresses that gap. We implement MCL-Team, the foundational algorithm in the cooperative cross-discussion family, and evaluate it on two public benchmarks---LiveBench (2026-01 leaderboard snapshot, 682 questions) and IFEval (541 prompts, 25 verifiable instruction types, programmatic scoring). Both benchmarks are designed to resist contamination: LiveBench refreshes questions monthly \cite{White2024LiveBench}, and IFEval uses rule-based verification with no LLM judge \cite{Zhou2024IFEval}.
 
-We evaluate MCL-Team at three quality-cost operating points (Junior, Senior, Principal), configured through internal resource allocation and coordination depth. The Junior $\rightarrow$ Senior comparison serves as an ablation: identical resource allocation, differing only in coordination depth. We also conduct an independent cross-validation by submitting the benchmark data to three LLM analysts (DeepSeek V4, Gemini 2.5 Pro, ChatGPT), who independently converge on the same capability profile.
+We evaluate MCL-Team at three quality-cost operating points (Junior, Senior, Principal), configured through internal resource allocation and coordination depth. The Junior $\rightarrow$ Senior comparison serves as an ablation: identical resource allocation, differing only in coordination depth. We also submit the completed benchmark results to three LLMs for independent capability profiling: DeepSeek V4 Pro, Gemini 3.5 Pro, and ChatGPT 5.5 are each given the same leaderboard data and asked to analyze the ranking and characterize the capability profile. All three independently converge on the same interpretation.
 
 Our contributions are:
 
@@ -366,9 +366,9 @@ Multi-model collaboration increases token consumption by 5--10$\times$ and laten
     \label{fig2:quality-cost}
 \end{figure}
 
-\subsubsection{5.6 Independent LLM Cross-Validation}\label{cross-validation}
+\subsubsection{5.6 Independent Capability Analysis}\label{capability-analysis}
 
-To reduce analyst bias, we submitted the LiveBench 2026-01 leaderboard data and MCL-Team Junior scores to three LLMs---DeepSeek V4, Gemini 2.5 Pro, and ChatGPT---with identical instructions: rank the models, identify anomalies, and characterize the capability profile. All three independently converged on the same interpretation: Junior's Language (93.5) and IF (87.4) rank above all single models, the Reasoning score (84.5) places in the upper tier but below the strongest reasoning-specialized models, and Math/Data Analysis are the primary constraints on overall score. ChatGPT additionally noted that the Language $\gg$ Reasoning gap (93.5 vs.\ 84.5) is atypical for single models and aligns with a generate $\rightarrow$ verify $\rightarrow$ rewrite pipeline structure. The only divergence was in emphasis (deployment implications vs.\ statistical rigor vs.\ architectural interpretation). The full analysis is included in the supplementary materials.
+To obtain an impartial interpretation of the benchmark results, we submitted the LiveBench 2026-01 leaderboard data and MCL-Team Junior scores to three LLMs---DeepSeek V4 Pro, Gemini 3.5 Pro, and ChatGPT 5.5---with identical instructions: rank the models, identify anomalies, and characterize the capability profile. The LLMs did not participate in benchmark evaluation; they only analyzed the completed scores. All three independently converged on the same interpretation: Junior's Language (93.5) and IF (87.4) rank above all single models, the Reasoning score (84.5) places in the upper tier but below the strongest reasoning-specialized models, and Math/Data Analysis are the primary constraints on overall score. ChatGPT additionally noted that the Language $\gg$ Reasoning gap (93.5 vs.\ 84.5) is atypical for single models and aligns with a generate $\rightarrow$ verify $\rightarrow$ rewrite pipeline structure. The only divergence was in emphasis (deployment implications vs.\ statistical rigor vs.\ architectural interpretation). The full analysis is included in the supplementary materials.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -419,7 +419,7 @@ MCL-Team and single-model workflows serve complementary roles: the former for qu
 
 \subsection*{Acknowledgments}\label{acknowledgments}
 
-We thank the developers of LiveBench and IFEval for maintaining contamination-resistant, programmatically scored benchmarks. The independent analyses by DeepSeek, Gemini, and ChatGPT provided useful cross-validation.
+We thank the developers of LiveBench and IFEval for maintaining contamination-resistant, programmatically scored benchmarks. The independent capability analyses by DeepSeek V4 Pro, Gemini 3.5 Pro, and ChatGPT 5.5 provided useful external interpretation.
 
 \nocite{*}
 \bibliographystyle{unsrtnat}
